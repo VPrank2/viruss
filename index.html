@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Alert!</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap');
+    :root {
+      --bg-color: #ffffff;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --button-bg: #b91c1c;
+      --button-text: #ffffff;
+      --border-radius: 12px;
+      --shadow-light: rgba(0, 0, 0, 0.05);
+      --container-max-width: 1200px;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: var(--bg-color);
+      font-family: 'Poppins', sans-serif;
+      color: var(--text-primary);
+      line-height: 1.6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding: 2rem;
+      overflow: hidden;
+      user-select: none;
+    }
+    main.container {
+      max-width: var(--container-max-width);
+      width: 100%;
+      background: #fff4f4;
+      border-radius: var(--border-radius);
+      box-shadow: 0 20px 40px rgba(185, 28, 28, 0.3);
+      padding: 4rem 5rem;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+      animation: shake 0.8s ease-in-out infinite;
+    }
+    h1 {
+      font-weight: 800;
+      font-size: 5rem;
+      margin-bottom: 1.25rem;
+      color: var(--button-bg);
+      text-shadow: 0 0 8px var(--button-bg);
+      user-select: none;
+      line-height: 1.1;
+    }
+    p.subtitle {
+      font-weight: 600;
+      font-size: 1.5rem;
+      color: var(--text-secondary);
+      margin-bottom: 3rem;
+      user-select: none;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    a#dismiss-link {
+      display: inline-block;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      font-size: 1.5rem;
+      padding: 1.25rem 4rem;
+      background: var(--button-bg);
+      color: var(--button-text);
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      box-shadow: 0 12px 24px rgba(185, 28, 28, 0.6);
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      user-select: none;
+      text-decoration: none;
+      user-select: none;
+      outline-offset: 4px;
+    }
+    a#dismiss-link:hover,
+    a#dismiss-link:focus {
+      background: #7f1d1d;
+      transform: scale(1.1);
+      outline: none;
+    }
+    /* Shake animation */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      15%, 45%, 75% { transform: translateX(-15px); }
+      30%, 60%, 90% { transform: translateX(15px); }
+    }
+    /* Popups styling */
+    .popup {
+      position: fixed;
+      z-index: 10000;
+      background: var(--button-bg);
+      color: var(--button-text);
+      font-weight: 700;
+      font-size: 1.125rem;
+      padding: 1rem 1.75rem;
+      border-radius: var(--border-radius);
+      box-shadow: 0 8px 24px rgba(185, 28, 28, 0.8);
+      user-select: none;
+      animation: popupShow 0.4s ease forwards;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    @keyframes popupShow {
+      from {
+        opacity: 0;
+        transform: translateY(-60px) scale(0.8);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container" role="alert" aria-live="assertive" aria-atomic="true">
+    <h1>⚠️ CRITICAL ALERT!</h1>
+    <p class="subtitle">Your device has been infected by a severe virus.<br>Immediate action is required!</p>
+    <a href="#!" id="dismiss-link" aria-label="Dismiss alert (Warning: many pop-ups!)">Dismiss Alert</a>
+  </main>
+
+  <!-- Sounds -->
+  <audio id="alert-sound" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" preload="auto" loop></audio>
+  <audio id="beep-sound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+  <audio id="popup-sound" src="https://actions.google.com/sounds/v1/alarms/bugle_tune.ogg" preload="auto"></audio>
+  <audio id="crazy-sound" src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" preload="auto"></audio>
+
+  <script>
+    document.title = "Alert!";
+
+    const container = document.querySelector('main.container');
+    const alertSound = document.getElementById('alert-sound');
+    const beepSound = document.getElementById('beep-sound');
+    const popupSound = document.getElementById('popup-sound');
+    const crazySound = document.getElementById('crazy-sound');
+    const dismissLink = document.getElementById('dismiss-link');
+
+    let beepInterval;
+    let crazyInterval;
+    let currentBeepVolume = 0.2;  // Start low
+    const maxBeepVolume = 1.0;
+    const beepVolumeStep = 0.05;
+
+    window.onload = () => {
+      container.classList.add('shaking');
+      alertSound.volume = 0.25;
+      alertSound.play().catch(() => {});
+      beepInterval = setInterval(() => {
+        increaseVolumeAndPlay(beepSound);
+      }, 2800);
+    };
+
+    function increaseVolumeAndPlay(audioElem) {
+      if (currentBeepVolume < maxBeepVolume) {
+        currentBeepVolume += beepVolumeStep;
+        if (currentBeepVolume > maxBeepVolume) currentBeepVolume = maxBeepVolume;
+      }
+      audioElem.volume = currentBeepVolume;
+      audioElem.currentTime = 0;
+      audioElem.play().catch(() => {});
+    }
+
+    function createPopup() {
+      const popup = document.createElement('div');
+      popup.classList.add('popup');
+      popup.textContent = '🔴 RESET YOUR PHONE! 🔴';
+
+      const margin = 20;
+      const x = Math.random() * (window.innerWidth - 200 - 2 * margin) + margin;
+      const y = Math.random() * (window.innerHeight - 60 - 2 * margin) + margin;
+      popup.style.left = `${x}px`;
+      popup.style.top = `${y}px`;
+
+      document.body.appendChild(popup);
+      popupSound.currentTime = 0;
+      popupSound.play().catch(() => {});
+
+      setTimeout(() => {
+        popup.style.transition = 'opacity 1s ease';
+        popup.style.opacity = '0';
+        setTimeout(() => {
+          popup.remove();
+        }, 1000);
+      }, 5000);
+    }
+
+    dismissLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      dismissLink.setAttribute('aria-disabled', 'true');
+      dismissLink.style.pointerEvents = 'none';
+      dismissLink.textContent = 'Try Closing...';
+
+      container.style.animationDuration = '0.4s';
+
+      alertSound.pause();
+
+      const popupFrenzy = () => {
+        createPopup();
+        setTimeout(popupFrenzy, 180);
+      };
+      popupFrenzy();
+
+      clearInterval(beepInterval);
+      currentBeepVolume = 0.2;
+      beepInterval = setInterval(() => {
+        increaseVolumeAndPlay(beepSound);
+      }, 900);
+
+      // Crazy loud sound played randomly and repeatedly with increasing volume
+      let crazyVol = 0.1;
+      crazySound.volume = crazyVol;
+      crazyInterval = setInterval(() => {
+        crazySound.currentTime = 0;
+        crazySound.play().catch(() => {});
+        crazyVol += 0.07;
+        if (crazyVol > 1) crazyVol = 1;
+        crazySound.volume = crazyVol;
+      }, 1500);
+    });
+
+    window.addEventListener('contextmenu', e => e.preventDefault());
+    window.addEventListener('keydown', e => {
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key.toLowerCase() === 'i' || e.key.toLowerCase() === 'j')) ||
+        (e.ctrlKey && (e.key.toLowerCase() === 'u' || e.key.toLowerCase() === 's'))
+      ) {
+        e.preventDefault();
+        alert('This action is disabled. Please "reset your phone"!');
+      }
+    });
+  </script>
+</body>
+</html>
